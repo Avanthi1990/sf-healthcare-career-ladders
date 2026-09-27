@@ -10,6 +10,7 @@ from __future__ import annotations
 import csv
 import datetime as dt
 import hashlib
+import ssl
 import sys
 import urllib.request
 from pathlib import Path
@@ -69,9 +70,23 @@ def sha256(p: Path) -> str:
     return h.hexdigest()
 
 
+# labormarketinfo.edd.ca.gov serves its certificate without the Sectigo intermediate
+# that links it to a trusted root. Browsers and macOS fetch it themselves; Linux does
+# not. Trusting the published intermediate (src/certs/) keeps full verification on.
+CERTS = Path(__file__).resolve().parent / "certs"
+
+
+def _ssl_context() -> ssl.SSLContext:
+    ctx = ssl.create_default_context()
+    for pem in CERTS.glob("*.pem"):
+        ctx.load_verify_locations(cafile=str(pem))
+    return ctx
+
+
 def fetch(url: str, dest: Path) -> None:
     req = urllib.request.Request(url, headers={"User-Agent": UA})
-    with urllib.request.urlopen(req, timeout=300) as r, dest.open("wb") as f:
+    with urllib.request.urlopen(req, timeout=300, context=_ssl_context()) as r, \
+            dest.open("wb") as f:
         while chunk := r.read(1 << 20):
             f.write(chunk)
 
