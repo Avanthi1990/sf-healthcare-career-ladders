@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+data/interim/
+data/raw/*.part
+# 270 MB; src/fetch.py downloads it and MANIFEST.csv records its checksum
+data/raw/acs_pums_ca_person_2020_2024.zip
+report/*.rendered.html
+.DS_Store
+# Submission-only material (emailed, not published)
+report/
+README_SUBMISSION.md
+data/raw/report/
+src/report_sources.py
+data/raw/occ_transitions_entry_roles.csv

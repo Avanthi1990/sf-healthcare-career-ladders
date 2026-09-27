@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SF Healthcare Career Ladders</title>
+<meta name="description" content="Which entry-level healthcare jobs in San Francisco lead to a living wage. Public data, rebuilt automatically.">
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="titles">
+      <h1>SF Healthcare Career Ladders</h1>
+      <p class="sub">Which entry-level healthcare jobs in San Francisco lead to a living wage</p>
+    </div>
+    <div class="controls">
+      <label for="bench">Living wage for</label>
+      <select id="bench" aria-describedby="bench-note"></select>
+      <span id="bench-note" class="bench-note"></span>
+      <button id="theme" class="ghost" type="button" aria-label="Toggle dark mode">Theme</button>
+    </div>
+  </div>
+  <nav class="wrap tabs" role="tablist" aria-label="Dashboard pages">
+    <button role="tab" data-tab="overview">Overview</button>
+    <button role="tab" data-tab="need">The need</button>
+    <button role="tab" data-tab="jobs">Which jobs clear the bar</button>
+    <button role="tab" data-tab="ladder">Career ladder</button>
+    <button role="tab" data-tab="who">Who holds the jobs</button>
+    <button role="tab" data-tab="measure">Measuring progress</button>
+    <button role="tab" data-tab="manual">User manual</button>
+  </nav>
+</header>
+
+<main class="wrap">
+
+<section id="overview" class="page" role="tabpanel">
+  <div class="tiles" id="tiles"></div>
+  <div class="card">
+    <h2>What this dashboard answers</h2>
+    <p>A first healthcare job is a real achievement. The question here is what comes next:
+      which entry roles in San Francisco lead to a job that pays a living wage, and which tend
+      to plateau. Choose a household type at the top right; every page recalculates against
+      that living wage.</p>
+    <ol class="flow">
+      <li><a href="#need">The need</a>: who works full time and still earns below a living wage.</li>
+      <li><a href="#jobs">Which jobs clear the bar</a>: healthcare occupations that do not require a degree, by SF wage.</li>
+      <li><a href="#ladder">Career ladder</a>: where people go when they leave each entry role, priced at SF wages.</li>
+      <li><a href="#who">Who holds the jobs</a>: the workforce on each rung, by race and sex.</li>
+      <li><a href="#measure">Measuring progress</a>: a living-wage progression metric for a training program.</li>
+    </ol>
+  </div>
+</section>
+
+<section id="need" class="page" role="tabpanel" hidden>
+  <div class="card">
+    <h2>Share of SF full-time workers earning below the living wage</h2>
+    <p class="lede" id="need-lede"></p>
+    <div class="chart" id="need-chart"></div>
+    <details><summary>Table view</summary><div id="need-table"></div></details>
+    <p class="note">ACS PUMS 2020-2024 5-year, San Francisco residents aged 18-64 working 35+ hours a week and 50+ weeks a year.
+      Wages in 2024 dollars; the MIT threshold is deflated to 2024 dollars with San Francisco CPI. Whiskers are 90% margins of error from the Census replicate weights.</p>
+  </div>
+</section>
+
+<section id="jobs" class="page" role="tabpanel" hidden>
+  <div class="tiles" id="jobs-tiles"></div>
+  <div class="card">
+    <div class="card-head">
+      <h2>Healthcare occupations without a degree requirement, by SF hourly wage</h2>
+      <label class="check"><input type="checkbox" id="jobs-small"> Include occupations under 400 jobs</label>
+    </div>
+    <div class="legend" id="jobs-legend"></div>
+    <div class="chart" id="jobs-chart"></div>
+    <details><summary>Table view</summary><div id="jobs-table"></div></details>
+    <p class="note">Dot = median, bar = 25th to 75th percentile. EDD OEWS, San Francisco-San Mateo-Redwood City (May 2025 employment, wages aged to 2026 Q1), joined to EDD 2023-2033 projections.</p>
+  </div>
+</section>
+
+<section id="ladder" class="page" role="tabpanel" hidden>
+  <div class="grid2">
+    <div class="card">
+      <h2>Entry roles: SF wage and upward mobility</h2>
+      <p class="lede">Of people who leave each role, the share who move into a clinical healthcare job paying at or above the selected living wage. Click a bubble to explore it.</p>
+      <div class="legend" id="ladder-legend"></div>
+      <div class="chart" id="ladder-chart"></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <h2 id="role-title">Where people go</h2>
+        <select id="role" aria-label="Entry role"></select>
+      </div>
+      <div class="facts" id="role-facts"></div>
+      <div class="chart" id="mix-chart"></div>
+      <h3>Most common destinations</h3>
+      <div class="chart" id="dest-chart"></div>
+    </div>
+  </div>
+  <p class="note">Transitions: Schubert, Stansbury &amp; Taska (2021), national resumes 2002-2015, among people who change occupation. Wages: SF 2026. The two are shown side by side, never combined into a single SF probability. "Clinical" excludes medical and health services managers.</p>
+</section>
+
+<section id="who" class="page" role="tabpanel" hidden>
+  <div class="card">
+    <h2>Who works on each rung</h2>
+    <p class="lede">By race, entry-level healthcare work in San Francisco is done disproportionately by Asian and Black workers. The LVN and RN rung looks much more like the city's workforce as a whole. Both are mostly women, as healthcare is generally.</p>
+    <div class="chart" id="who-chart"></div>
+    <details><summary>Table view</summary><div id="who-table"></div></details>
+    <p class="note">ACS PUMS 2020-2024, employed SF residents. Estimates with fewer than 50 records or a coefficient of variation above 30% are marked with a dagger (†) and shown for completeness only.</p>
+  </div>
+</section>
+
+<section id="measure" class="page" role="tabpanel" hidden>
+  <div class="card prose">
+    <h2>Measuring progress: the living-wage progression rate</h2>
+    <p><strong>Definition.</strong> Of participants placed in a cohort, the share whose hourly wage reaches or exceeds the SF living wage by month 24 after placement, reported alongside the share at month 12.</p>
+    <table class="spec">
+      <tr><th>Numerator</th><td>Participants with a verified hourly wage at or above the benchmark at the 12- or 24-month follow-up</td></tr>
+      <tr><th>Denominator</th><td>All participants placed in the cohort, including those not reached. Unreached participants are reported as their own category, never dropped</td></tr>
+      <tr><th>Wage</th><td>Hourly wage from the follow-up record; if only annual earnings exist, earnings divided by (usual weekly hours × weeks worked)</td></tr>
+      <tr><th>Benchmark</th><td>MIT SF single adult, fixed at the value in effect at placement</td></tr>
+      <tr><th>Tiers alongside</th><td>Below living wage; single adult; two earners with one child; two earners with two children</td></tr>
+      <tr><th>Disaggregation</th><td>Race/ethnicity, sex, entry role, program. Cells under 10 suppressed and noted</td></tr>
+      <tr><th>Data needed</th><td>Placement date, occupation (SOC), hourly wage and hours at placement and each follow-up, follow-up status</td></tr>
+    </table>
+    <h3>Logic model</h3>
+    <table class="spec logic">
+      <tr><th>Inputs</th><td>Coaching staff; employer partners; LVN school partners; tuition and wraparound funds</td></tr>
+      <tr><th>Activities</th><td>Recruit working alumni; prerequisite and entrance-exam prep; enrolment support; retention coaching</td></tr>
+      <tr><th>Outputs</th><td>Participants enrolled; prerequisites completed; LVN program admissions</td></tr>
+      <tr><th>Short-term (0-12 months)</th><td>Program retention; continued employment during training; wage held or rising</td></tr>
+      <tr><th>Long-term (24+ months)</th><td>LVN licensure and placement; living wage at 24 months; progress toward RN</td></tr>
+    </table>
+    <h3>Why federal indicators are not enough on their own</h3>
+    <p>A WIOA performance score is achieved performance divided by a negotiated target, not an outcome rate. San Francisco's PY2023 Adult median-earnings target was $7,600 a quarter; a full quarter at the single-adult living wage is about $16,200 in 2024 dollars. A program can exceed its federal target and still leave its median participant short of what it costs to live here. That reflects the measure, not any program. The living-wage progression rate asks the question the federal measures leave open: not <em>did they find work</em>, but <em>did the work lead somewhere</em>.</p>
+  </div>
+</section>
+
+<section id="manual" class="page" role="tabpanel" hidden>
+  <div class="card prose">
+    <h2>User manual</h2>
+    <h3>Getting around</h3>
+    <ul>
+      <li><strong>Pages</strong> are the tabs under the title. Each page answers one question, listed on the Overview.</li>
+      <li><strong>Living wage for</strong> (top right) sets the benchmark for every page at once. Values are MIT Living Wage for San Francisco County, hourly, per working adult. "Single adult" is the default and the least demanding household type: a wage that misses it misses every single-earner household.</li>
+      <li><strong>Hover</strong> (or tap on a phone) any bar, dot or bubble for its exact values and sample details.</li>
+      <li><strong>Table view</strong> under each chart shows the same numbers as a table, for screen readers, copying, or checking.</li>
+      <li><strong>Career ladder:</strong> click a bubble or use the role menu to see where people in that role go next.</li>
+      <li>The page remembers your theme choice on this device. Links like <code>#ladder</code> open a page directly.</li>
+    </ul>
+    <h3>What each measure means</h3>
+    <table class="spec">
+      <tr><th>Below living wage (The need)</th><td>Share of full-time, year-round workers whose hourly wage (annual wages ÷ usual hours × weeks worked) is below the benchmark, deflated to 2024 dollars</td></tr>
+      <tr><th>Median, 25th, 75th percentile</th><td>EDD OEWS hourly wage percentiles for the SF-San Mateo-Redwood City area. The 25th percentile is a rough proxy for a new hire's pay</td></tr>
+      <tr><th>Openings</th><td>EDD projected total openings 2023-2033: growth plus people leaving the occupation or the labour force</td></tr>
+      <tr><th>Leaves the occupation each year</th><td>EDD projected occupational transfers ÷ 10 ÷ 2023 employment</td></tr>
+      <tr><th>Clinical job above living wage</th><td>Of people who leave a role (nationally), the share moving to a clinical healthcare occupation whose SF median meets the benchmark. Excludes medical and health services managers</td></tr>
+      <tr><th>Rung / partial / plateau</th><td>30%+ / 15-30% / under 15% on the measure above. Analytical cuts, shown so they can be debated</td></tr>
+    </table>
+    <h3>Caveats to keep in mind</h3>
+    <ul>
+      <li><strong>National moves, local wages.</strong> Transition shares are national and from 2002-2015; wages are San Francisco 2026. They describe how occupations connect, not current SF odds.</li>
+      <li><strong>Only people who changed occupation</strong> are in the transition shares. Staying put is not counted.</li>
+      <li><strong>Resumes over-represent people with degrees</strong>, which probably overstates upward moves for every role. Comparisons between roles are more reliable than any single level.</li>
+      <li><strong>Survey uncertainty.</strong> ACS figures carry margins of error; unreliable cells are flagged, not hidden.</li>
+      <li><strong>Public data describes the market, not any program's participants.</strong> Participant records are what answer where a program's own alumni go.</li>
+    </ul>
+    <h3>How it stays current</h3>
+    <p>A scheduled job re-downloads every source, rebuilds every table from scratch, and republishes this page. The build date is in the footer. Each source, its URL and the date it was retrieved are listed below; the repository's <code>data/raw/MANIFEST.csv</code> also records a checksum for each file.</p>
+    <div id="sources"></div>
+  </div>
+</section>
+
+</main>
+<footer class="wrap foot"><span id="built"></span> · Avanthi Jandhyala · Public data only</footer>
+<div id="tip" class="tip" role="status" aria-live="polite" hidden></div>
+<script src="app.js"></script>
+</body>
+</html>
