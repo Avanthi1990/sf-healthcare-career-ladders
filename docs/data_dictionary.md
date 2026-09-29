@@ -41,7 +41,7 @@ One row per entry role (SOC 2010, as used by the transitions data).
 | share_to_manager | Share moving to medical and health services manager |
 | pattern | Rung (clinical ≥ 30%), Partial rung (15-30%), Plateau (< 15%). Analytical cuts |
 
-All shares are conditional on leaving the occupation, and are national (2002-2015). "At or above the living wage" refers to the destination occupation's SF median, not the earnings of the people who moved. Where a 2010 destination code became several 2018 codes, its share is split by the successors' SF employment.
+All shares are conditional on leaving the occupation, and are national (2002-2015). "At or above the living wage" refers to the destination occupation's SF median, not the earnings of the people who moved. Where a 2010 destination code became several 2018 codes, its share is split evenly across the successors.
 
 ## ladder_destinations.csv
 

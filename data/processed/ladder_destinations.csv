@@ -3,10 +3,10 @@ soc1,role,soc2,soc2_name,soc18,dest_title,share,dest_p50,dest_health,dest_clinic
 29-2041,EMT / paramedic,33-2011,Firefighters,33-2011,Firefighters,0.04003739729523659,61.81,False,False
 29-2041,EMT / paramedic,29-1141,Registered nurses,29-1141,Registered Nurses,0.036460913717746735,98.67,True,True
 29-2041,EMT / paramedic,11-9111,Medical and health services managers,11-9111,Medical and Health Services Managers,0.03374258056282997,86.07,True,False
-29-2041,EMT / paramedic,11-9199,"Managers, all other",11-9199,"Managers, All Other",0.027311723642594522,104.98,False,False
-29-2041,EMT / paramedic,29-2099,"Health technologists and technicians, all other",29-2099,"Health Technologists and Technicians, All Other",0.02568577229976654,38.78,True,True
 29-2041,EMT / paramedic,25-1194,"Vocational education teachers, postsecondary",25-1194,"Career/Technical Education Teachers, Postsecondary",0.024691704660654068,42.98,False,False
 29-2041,EMT / paramedic,11-1021,General and operations managers,11-1021,General and Operations Managers,0.021184032782912254,78.84,False,False
+29-2041,EMT / paramedic,21-1091,Health educators,21-1091,Health Education Specialists,0.0199507437646389,49.06,False,False
+29-2041,EMT / paramedic,31-1014,Nursing assistants,31-1131,Nursing Assistants,0.019659988582134247,28.75,True,True
 29-2052,Pharmacy technician,43-4051,Customer service representatives,43-4051,Customer Service Representatives,0.056645166128873825,29.02,False,False
 29-2052,Pharmacy technician,43-6014,"Secretaries and administrative assistants, except legal, medical, and executive",43-6014,"Secretaries and Administrative Assistants, Except Legal, Medical, and Executive",0.0361940898001194,30.45,False,False
 29-2052,Pharmacy technician,41-1011,First-line supervisors of retail sales workers,41-1011,First-Line Supervisors of Retail Sales Workers,0.02756688743829727,28.6,False,False
@@ -14,23 +14,23 @@ soc1,role,soc2,soc2_name,soc18,dest_title,share,dest_p50,dest_health,dest_clinic
 29-2052,Pharmacy technician,43-9061,"Office clerks, general",43-9061,"Office Clerks, General",0.0240409504622221,28.35,False,False
 29-2052,Pharmacy technician,41-2031,Retail salespersons,41-2031,Retail Salespersons,0.020973531529307365,21.37,False,False
 29-2052,Pharmacy technician,43-1011,First-line supervisors of office and administrative support workers,43-1011,First-Line Supervisors of Office and Administrative Support Workers,0.019325142726302147,45.33,False,False
-29-2052,Pharmacy technician,25-3099,"Teachers and instructors, all other",25-3031,"Substitute Teachers, Short-Term",0.01863784066646319,23.01,False,False
+29-2052,Pharmacy technician,41-4012,"Sales representatives, wholesale and manufacturing, except technical and scientific products",41-4012,"Sales Representatives, Wholesale and Manufacturing, Except Technical and Scientific Products",0.018085869029164314,48.23,False,False
 29-2061,Licensed vocational nurse (LVN),29-1141,Registered nurses,29-1141,Registered Nurses,0.3020692467689514,98.67,True,True
 29-2061,Licensed vocational nurse (LVN),11-9111,Medical and health services managers,11-9111,Medical and Health Services Managers,0.11485925316810608,86.07,True,False
 29-2061,Licensed vocational nurse (LVN),31-1014,Nursing assistants,31-1131,Nursing Assistants,0.033374983817338943,28.75,True,True
-29-2061,Licensed vocational nurse (LVN),11-9199,"Managers, all other",11-9199,"Managers, All Other",0.018469787322081682,104.98,False,False
 29-2061,Licensed vocational nurse (LVN),43-6014,"Secretaries and administrative assistants, except legal, medical, and executive",43-6014,"Secretaries and Administrative Assistants, Except Legal, Medical, and Executive",0.015634728595614433,30.45,False,False
 29-2061,Licensed vocational nurse (LVN),25-1199,"Postsecondary teachers, all other",25-1199,"Postsecondary Teachers, All Other",0.015599521808326244,,False,False
 29-2061,Licensed vocational nurse (LVN),21-1014,Mental health counselors,21-1014,,0.014239444397389889,,False,False
-29-2061,Licensed vocational nurse (LVN),11-9199,"Managers, all other",13-1082,Project Management Specialists,0.014059091842181579,68.66,False,False
+29-2061,Licensed vocational nurse (LVN),21-1091,Health educators,21-1091,Health Education Specialists,0.014056031592190266,49.06,False,False
+29-2061,Licensed vocational nurse (LVN),53-3032,Heavy and tractor-trailer truck drivers,53-3032,Heavy and Tractor-Trailer Truck Drivers,0.013590570539236069,31.28,False,False
 29-2071,Medical records technician,11-9111,Medical and health services managers,11-9111,Medical and Health Services Managers,0.05479627847671509,86.07,True,False
 29-2071,Medical records technician,13-1111,Management analysts,13-1111,Management Analysts,0.04105432704091072,64.84,False,False
 29-2071,Medical records technician,29-1141,Registered nurses,29-1141,Registered Nurses,0.03719833493232727,98.67,True,True
 29-2071,Medical records technician,43-4051,Customer service representatives,43-4051,Customer Service Representatives,0.03569808229804039,29.02,False,False
 29-2071,Medical records technician,43-6014,"Secretaries and administrative assistants, except legal, medical, and executive",43-6014,"Secretaries and Administrative Assistants, Except Legal, Medical, and Executive",0.034497637301683426,30.45,False,False
-29-2071,Medical records technician,11-9199,"Managers, all other",11-9199,"Managers, All Other",0.028009351247471528,104.98,False,False
 29-2071,Medical records technician,25-1199,"Postsecondary teachers, all other",25-1199,"Postsecondary Teachers, All Other",0.02758149988949299,,False,False
 29-2071,Medical records technician,11-1021,General and operations managers,11-1021,General and Operations Managers,0.024369841441512108,78.84,False,False
+29-2071,Medical records technician,11-1011,Chief executives,11-1011,Chief Executives,0.020344585180282593,115.0,False,False
 31-1011,Home health aide,31-1014,Nursing assistants,31-1131,Nursing Assistants,0.07985485345125198,28.75,True,True
 31-1011,Home health aide,43-4051,Customer service representatives,43-4051,Customer Service Representatives,0.04434531182050705,29.02,False,False
 31-1011,Home health aide,29-1141,Registered nurses,29-1141,Registered Nurses,0.03740418702363968,98.67,True,True
@@ -46,7 +46,7 @@ soc1,role,soc2,soc2_name,soc18,dest_title,share,dest_p50,dest_health,dest_clinic
 31-1014,Nursing assistant,43-6014,"Secretaries and administrative assistants, except legal, medical, and executive",43-6014,"Secretaries and Administrative Assistants, Except Legal, Medical, and Executive",0.02823890931904316,30.45,False,False
 31-1014,Nursing assistant,31-9092,Medical assistants,31-9092,Medical Assistants,0.024971146136522293,29.24,True,True
 31-1014,Nursing assistant,29-2061,Licensed practical and licensed vocational nurses,29-2061,Licensed Practical and Licensed Vocational Nurses,0.021010244265198708,46.92,True,True
-31-1014,Nursing assistant,11-9199,"Managers, all other",11-9199,"Managers, All Other",0.016436385117826566,104.98,False,False
+31-1014,Nursing assistant,43-9061,"Office clerks, general",43-9061,"Office Clerks, General",0.016111159697175026,28.35,False,False
 31-9091,Dental assistant,43-6014,"Secretaries and administrative assistants, except legal, medical, and executive",43-6014,"Secretaries and Administrative Assistants, Except Legal, Medical, and Executive",0.05655724182724953,30.45,False,False
 31-9091,Dental assistant,43-4051,Customer service representatives,43-4051,Customer Service Representatives,0.04432908818125725,29.02,False,False
 31-9091,Dental assistant,43-1011,First-line supervisors of office and administrative support workers,43-1011,First-Line Supervisors of Office and Administrative Support Workers,0.04174032434821129,45.33,False,False
@@ -64,29 +64,29 @@ soc1,role,soc2,soc2_name,soc18,dest_title,share,dest_p50,dest_health,dest_clinic
 31-9092,Medical assistant,43-1011,First-line supervisors of office and administrative support workers,43-1011,First-Line Supervisors of Office and Administrative Support Workers,0.024988926947116852,45.33,False,False
 31-9092,Medical assistant,29-2012,Medical and clinical laboratory technicians,29-2012,Clinical Laboratory Technologists and Technicians,0.024348918348550797,41.51,True,True
 31-9093,Sterile processing technician,31-1014,Nursing assistants,31-1131,Nursing Assistants,0.030485717579722404,28.75,True,True
-31-9093,Sterile processing technician,17-3029,"Engineering technicians, except drafters, all other",17-3029,"Engineering Technologists and Technicians, Except Drafters, All Other",0.03009198859333992,40.93,False,False
 31-9093,Sterile processing technician,41-2031,Retail salespersons,41-2031,Retail Salespersons,0.02799178473651409,21.37,False,False
 31-9093,Sterile processing technician,43-4051,Customer service representatives,43-4051,Customer Service Representatives,0.02764178439974785,29.02,False,False
-31-9093,Sterile processing technician,11-9199,"Managers, all other",11-9199,"Managers, All Other",0.026689367210966045,104.98,False,False
 31-9093,Sterile processing technician,29-2012,Medical and clinical laboratory technicians,29-2012,Clinical Laboratory Technologists and Technicians,0.022846775129437447,41.51,True,True
 31-9093,Sterile processing technician,11-9111,Medical and health services managers,11-9111,Medical and Health Services Managers,0.022378358989953995,86.07,True,False
 31-9093,Sterile processing technician,43-6014,"Secretaries and administrative assistants, except legal, medical, and executive",43-6014,"Secretaries and Administrative Assistants, Except Legal, Medical, and Executive",0.020721938461065292,30.45,False,False
+31-9093,Sterile processing technician,41-2011,Cashiers,41-2011,Cashiers,0.01987530291080475,20.3,False,False
+31-9093,Sterile processing technician,15-1151,Computer user support specialists,15-1232,Computer User Support Specialists,0.018875617533922195,45.52,False,False
 31-9097,Phlebotomist,31-9092,Medical assistants,31-9092,Medical Assistants,0.12073689699172974,29.24,True,True
 31-9097,Phlebotomist,29-2012,Medical and clinical laboratory technicians,29-2012,Clinical Laboratory Technologists and Technicians,0.08613916486501694,41.51,True,True
 31-9097,Phlebotomist,31-1014,Nursing assistants,31-1131,Nursing Assistants,0.06517383456230164,28.75,True,True
 31-9097,Phlebotomist,11-9111,Medical and health services managers,11-9111,Medical and Health Services Managers,0.03579138591885567,86.07,True,False
-31-9097,Phlebotomist,29-2099,"Health technologists and technicians, all other",29-2099,"Health Technologists and Technicians, All Other",0.03172941133379936,38.78,True,True
 31-9097,Phlebotomist,43-4051,Customer service representatives,43-4051,Customer Service Representatives,0.030418602749705315,29.02,False,False
 31-9097,Phlebotomist,53-3032,Heavy and tractor-trailer truck drivers,53-3032,Heavy and Tractor-Trailer Truck Drivers,0.023879822343587875,31.28,False,False
 31-9097,Phlebotomist,29-1141,Registered nurses,29-1141,Registered Nurses,0.02245410904288292,98.67,True,True
+31-9097,Phlebotomist,25-1199,"Postsecondary teachers, all other",25-1199,"Postsecondary Teachers, All Other",0.017345838248729706,,False,False
 39-9021,Personal care aide,43-4051,Customer service representatives,43-4051,Customer Service Representatives,0.03605584427714348,29.02,False,False
 39-9021,Personal care aide,43-6014,"Secretaries and administrative assistants, except legal, medical, and executive",43-6014,"Secretaries and Administrative Assistants, Except Legal, Medical, and Executive",0.02976839430630207,30.45,False,False
 39-9021,Personal care aide,31-1014,Nursing assistants,31-1131,Nursing Assistants,0.027475111186504364,28.75,True,True
 39-9021,Personal care aide,29-1141,Registered nurses,29-1141,Registered Nurses,0.027368439361453056,98.67,True,True
 39-9021,Personal care aide,41-2031,Retail salespersons,41-2031,Retail Salespersons,0.024545179679989815,21.37,False,False
-39-9021,Personal care aide,11-9199,"Managers, all other",11-9199,"Managers, All Other",0.024482609707807808,104.98,False,False
 39-9021,Personal care aide,53-3032,Heavy and tractor-trailer truck drivers,53-3032,Heavy and Tractor-Trailer Truck Drivers,0.02152269519865513,31.28,False,False
 39-9021,Personal care aide,41-2011,Cashiers,41-2011,Cashiers,0.020289765670895576,20.3,False,False
+39-9021,Personal care aide,43-9061,"Office clerks, general",43-9061,"Office Clerks, General",0.01894722506403923,28.35,False,False
 43-6013,Medical secretary / admin,43-6014,"Secretaries and administrative assistants, except legal, medical, and executive",43-6014,"Secretaries and Administrative Assistants, Except Legal, Medical, and Executive",0.08980938792228699,30.45,False,False
 43-6013,Medical secretary / admin,43-4051,Customer service representatives,43-4051,Customer Service Representatives,0.05971381068229675,29.02,False,False
 43-6013,Medical secretary / admin,43-1011,First-line supervisors of office and administrative support workers,43-1011,First-Line Supervisors of Office and Administrative Support Workers,0.03282030299305916,45.33,False,False

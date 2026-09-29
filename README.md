@@ -21,7 +21,7 @@ file listed, with its checksum, in `data/raw/MANIFEST.csv`.
   $31.86.
 - **The ladder.** Nationally, 10-15% of medical, dental and nursing assistants who
   change occupation move into a clinical occupation whose SF median is at or above the
-  living wage. For licensed vocational nurses it is 34%, and 30% become registered
+  living wage. For licensed vocational nurses it is 33%, and 30% become registered
   nurses.
 - **Who holds the jobs.** By race, entry-level healthcare work is done
   disproportionately by Asian and Black workers. The LVN and RN rung looks much more
@@ -102,9 +102,9 @@ half of all customer-service moves.
 national (2002-2015); wages are SF (2026) occupation medians, not movers' own earnings.
 Every view shows them side by side.
 
-**Split occupations are allocated by SF employment.** Where one 2010 code became
-several 2018 codes, moves are divided by each successor's SF employment, an assumption
-documented in `common.soc2010_to_2018()`. "Clinical" excludes the administrative and
+**Split occupations are divided evenly.** Where one 2010 code became several 2018
+codes, moves are split evenly across the successors, an assumption documented in
+`common.soc2010_to_2018()`. "Clinical" excludes the administrative and
 non-clinical healthcare occupations listed in `ladder.NON_CLINICAL`.
 
 **Survey estimates carry their uncertainty.** `need.py` computes standard errors from
