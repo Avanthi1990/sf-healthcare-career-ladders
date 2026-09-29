@@ -49,17 +49,10 @@ SOURCES = [
     ("pums_data_dictionary_2020_2024.csv",
      "https://www2.census.gov/programs-surveys/acs/tech_docs/pums/data_dict/PUMS_Data_Dictionary_2020-2024.csv",
      "ACS PUMS 2020-2024 data dictionary (variable and occupation code definitions)"),
+    ("bvnpt_board_20260206_item7di.pdf",
+     "https://bvnpt.ca.gov/about_us/meetings/materials/20260206_7di.pdf",
+     "CA Board of Vocational Nursing, Feb 2026 agenda item: approved VN curriculum (576 theory + 954 clinical hours)"),
 ]
-
-
-def report_sources() -> list:
-    """Report-only sources live in src/report_sources.py, which ships with the
-    written report but not with the public repository."""
-    try:
-        from report_sources import REPORT_SOURCES
-    except ImportError:
-        return []
-    return REPORT_SOURCES
 
 
 def sha256(p: Path) -> str:
@@ -93,11 +86,7 @@ def fetch(url: str, dest: Path) -> None:
 
 def main() -> int:
     refresh = "--refresh" in sys.argv
-    report = "--report" in sys.argv
-    status = run(SOURCES, RAW / "MANIFEST.csv", refresh)
-    if report and report_sources():
-        status |= run(report_sources(), RAW / "report" / "MANIFEST.csv", refresh)
-    return status
+    return run(SOURCES, RAW / "MANIFEST.csv", refresh)
 
 
 def run(sources, manifest_path: Path, refresh: bool) -> int:

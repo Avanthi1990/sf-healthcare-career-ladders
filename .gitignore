@@ -9,6 +9,4 @@ report/*.rendered.html
 # Submission-only material (emailed, not published)
 report/
 README_SUBMISSION.md
-data/raw/report/
-src/report_sources.py
 data/raw/occ_transitions_entry_roles.csv

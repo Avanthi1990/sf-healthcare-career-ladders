@@ -8,7 +8,7 @@ PY=${PY:-.venv/bin/python}
 PY="$(cd "$(dirname "$PY")" && pwd)/$(basename "$PY")"
 
 if [ -z "${OFFLINE:-}" ]; then
-  "$PY" src/fetch.py --report
+  "$PY" src/fetch.py
 fi
 (
   cd src
