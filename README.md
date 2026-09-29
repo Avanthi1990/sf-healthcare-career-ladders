@@ -90,7 +90,7 @@ docs/
   data_dictionary.md   every field, its meaning, and its caveats
 ```
 
-## Three things worth knowing about the code
+## Four things worth knowing about the code
 
 **The occupation crosswalk is built, not hand-typed.** The transitions data uses
 2010 occupation codes; SF wages use 2018 codes. `common.soc2010_to_2018()` chains
