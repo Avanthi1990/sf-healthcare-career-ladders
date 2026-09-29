@@ -52,12 +52,12 @@
     const clears = DATA.screen.filter((r) => r.p50 != null && r.p50 >= b).length;
     const ma = DATA.ladder.roles.find((r) => r.role === "Medical assistant");
     const lvn = DATA.ladder.roles.find((r) => r.role.startsWith("Licensed vocational"));
-    const rn = lvn.top_destinations.find((d) => d.name === "Registered nurses");
+    const rn = lvn.top_destinations.find((d) => d.soc18 === "29-1141");
     const tiles = [
       [pct(noBA.share), `of SF full-time workers without a bachelor's degree earn below ${money(b)}/hr`],
-      [`${clears} of ${DATA.screen.length}`, `healthcare occupations without a degree requirement have a median at or above ${money(b)}`],
-      [pct(ma.mix[state.bench].clinical_above), "of medical assistants who change occupation move into a clinical job paying at least that"],
-      [pct(rn ? rn.share : null), "of LVNs who change occupation become registered nurses (SF median $98.67)"],
+      [`${clears} of ${DATA.screen.length}`, `healthcare occupations below the bachelor's level have a median at or above ${money(b)}`],
+      [pct(ma.mix[state.bench].clinical_above), "of medical assistants who change occupation move into a clinical occupation whose SF median is at least that"],
+      [pct(rn ? rn.share : null), `of LVNs who change occupation become registered nurses (SF median ${money(rn ? rn.sf_p50 : null)})`],
     ];
     document.getElementById("tiles").innerHTML = tiles.map(([v, k]) => `<div class="tile"><div class="v">${v}</div><div class="k">${k}</div></div>`).join("");
   }
@@ -125,7 +125,7 @@
       [`${all.length - below.length} of ${all.length}`, `occupations have a median at or above ${money(b)}`],
       [pct(sum(below, "emp_2023") / sum(all, "emp_2023")), "of these healthcare jobs are in occupations with a median below it"],
       [pct(sum(below, "openings") / sum(all, "openings")), "of projected openings to 2033 are in those occupations"],
-      [`${all.filter((r) => r.p25 >= b).length} of ${all.length}`, "clear it at the 25th percentile, a rough proxy for entry pay"],
+      [`${all.filter((r) => r.p25 >= b).length} of ${all.length}`, "reach it at the 25th percentile, the lower end of the pay range"],
     ].map(([v, k]) => `<div class="tile"><div class="v">${v}</div><div class="k">${k}</div></div>`).join("");
 
     const small = document.getElementById("jobs-small").checked;
@@ -160,7 +160,7 @@
     bindTip(hit, (d) => [d.title, [
       ["Median", money(d.p50)], ["25th to 75th percentile", `${money(d.p25)} to ${money(d.p75)}`],
       ["Jobs (2023)", num(d.emp_2023)], ["Openings 2023-33", num(d.openings)],
-      ["Growth 2023-33", pct(d.growth_2023_33, 1)], ["Leave occupation each year", pct(d.annual_transfer_rate, 1)],
+      ["Growth 2023-33", pct(d.growth_2023_33, 1)], ["Projected transfers out per year", pct(d.annual_transfer_rate, 1)],
       ["Entry education", d.entry_ed]]]);
     table("jobs-table", ["Occupation", "Entry education", "Jobs", "Openings", "25th", "Median", "75th"],
       rows.map((d) => [d.title, d.entry_ed, num(d.emp_2023), num(d.openings), money(d.p25), money(d.p50), money(d.p75)]),
@@ -173,40 +173,41 @@
   const klassColor = { "Rung": "var(--s1)", "Partial rung": "var(--s3)", "Plateau": "var(--s2)" };
 
   function placeLabels(pts, W, H, m) {
-    const boxes = pts.map((p) => ({ x0: p.cx - p.r, x1: p.cx + p.r, y0: p.cy - p.r, y1: p.cy + p.r }));
-    const hits = (b) => boxes.some((o) => !(b.x1 < o.x0 || b.x0 > o.x1 || b.y1 < o.y0 || b.y0 > o.y1));
+    // Greedy placement: try positions around each bubble, moving further out step by
+    // step. A label may never cover another bubble or label; one placed away from its
+    // bubble gets a leader line. Anything left over is still available on hover.
+    const bubbles = pts.map((p) => ({ x0: p.cx - p.r - 2, x1: p.cx + p.r + 2, y0: p.cy - p.r - 2, y1: p.cy + p.r + 2 }));
+    const labels = [], leaders = [];
+    const hit = (b, list) => list.some((o) => !(b.x1 < o.x0 || b.x0 > o.x1 || b.y1 < o.y0 || b.y0 > o.y1));
+    const inside = (x, y, b) => x > b.x0 && x < b.x1 && y > b.y0 && y < b.y1;
+    const crosses = (seg, box) => { for (let t = 0.05; t < 1; t += 0.05) {
+      if (inside(seg.x1 + (seg.x2 - seg.x1) * t, seg.y1 + (seg.y2 - seg.y1) * t, box)) return true; } return false; };
+    const dirs = [[1, 0], [-1, 0], [0, -1], [0, 1], [1, -1], [-1, -1], [1, 1], [-1, 1]];
     pts.slice().sort((a, b) => b.r - a.r).forEach((p) => {
-      const w = p.text.length * 6.3, h = 13;
-      const cands = [
-        [p.cx + p.r + 4, p.cy - h / 2, "start"], [p.cx - p.r - 4 - w, p.cy - h / 2, "end"],
-        [p.cx - w / 2, p.cy - p.r - h - 2, "middle"], [p.cx - w / 2, p.cy + p.r + 2, "middle"],
-        [p.cx + p.r * 0.7, p.cy - p.r - h, "start"], [p.cx - p.r * 0.7 - w, p.cy + p.r, "end"],
-      ];
-      for (const [x0, y0, anchor] of cands) {
-        const b = { x0, x1: x0 + w, y0, y1: y0 + h };
-        if (b.x0 < m.l || b.x1 > W - 4 || b.y0 < 0 || b.y1 > H - m.b || hits(b)) continue;
-        boxes.push(b);
-        p.lx = anchor === "start" ? x0 : anchor === "end" ? x0 + w : x0 + w / 2; p.ly = y0 + h / 2; p.anchor = anchor;
-        return;
+      const w = p.text.length * 6.4, h = 14;
+      for (const d of [0, 16, 32, 48, 64]) {
+        for (const [dx, dy] of dirs) {
+          const gap = p.r + 4 + d;
+          const ax = p.cx + dx * gap, ay = p.cy + dy * gap;
+          const x0 = dx > 0 ? ax : dx < 0 ? ax - w : ax - w / 2;
+          const y0 = dy > 0 ? ay : dy < 0 ? ay - h : ay - h / 2;
+          const b = { x0, x1: x0 + w, y0, y1: y0 + h };
+          if (b.x0 < m.l || b.x1 > W - 4 || b.y0 < 0 || b.y1 > H - m.b) continue;
+          if (hit(b, bubbles) || hit(b, labels)) continue;
+          const lead = d > 0 ? { x: Math.max(x0, Math.min(x0 + w, p.cx)), y: dy > 0 ? y0 : dy < 0 ? y0 + h : y0 + h / 2 } : null;
+          const seg = lead && { x1: p.cx, y1: p.cy, x2: lead.x, y2: lead.y };
+          if (seg && labels.some((o) => crosses(seg, o))) continue;
+          if (leaders.some((l) => crosses(l, b))) continue;
+          labels.push(b);
+          if (seg) leaders.push(seg);
+          p.anchor = dx > 0 ? "start" : dx < 0 ? "end" : "middle";
+          p.lx = dx > 0 ? x0 : dx < 0 ? x0 + w : x0 + w / 2;
+          p.ly = y0 + h / 2;
+          p.leader = lead;
+          return;
+        }
       }
       p.lx = null;
-    });
-    // Second pass for anything still unlabelled: allow overlapping bubbles (text sits
-    // above them), but never another label.
-    const labelBoxes = boxes.slice(pts.length);
-    pts.filter((p) => p.lx == null).forEach((p) => {
-      const w = p.text.length * 6.3, h = 13;
-      const cands = [[p.cx - w / 2, p.cy + p.r + 2, "middle"], [p.cx - w / 2, p.cy - p.r - h - 2, "middle"],
-        [p.cx + p.r + 4, p.cy - h / 2, "start"], [p.cx - p.r - 4 - w, p.cy - h / 2, "end"],
-        [p.cx - w / 2, p.cy + p.r + h + 2, "middle"], [p.cx - w / 2, p.cy - p.r - 2 * h - 2, "middle"]];
-      for (const [x0, y0, anchor] of cands) {
-        const b = { x0, x1: x0 + w, y0, y1: y0 + h };
-        if (b.x0 < m.l || b.x1 > W - 4 || b.y0 < 0 || b.y1 > H - m.b) continue;
-        if (labelBoxes.some((o) => !(b.x1 < o.x0 || b.x0 > o.x1 || b.y1 < o.y0 || b.y0 > o.y1))) continue;
-        labelBoxes.push(b);
-        p.lx = anchor === "start" ? x0 : anchor === "end" ? x0 + w : x0 + w / 2; p.ly = y0 + h / 2; p.anchor = anchor;
-        return;
-      }
     });
   }
 
@@ -242,10 +243,13 @@
       .attr("stroke-width", (d) => (d.role === state.role ? 2.5 : 2));
     bindTip(g, (d) => [d.role, [
       ["SF median", money(d.sf_p50)], ["SF jobs", num(d.sf_emp)],
-      ["Leavers to clinical job above " + money(b), pct(d.v)],
-      ["Leavers staying in healthcare", pct(d.share_stay_health)],
-      ["Leaves occupation each year (SF)", pct(d.annual_transfer_rate, 1)], ["Pattern", klass(d.v)]]]);
+      ["Leavers to clinical occupation, median ≥ " + money(b), pct(d.v)],
+      ["Leavers moving within healthcare", pct(d.share_stay_health)],
+      ["Projected transfers out per year (SF)", pct(d.annual_transfer_rate, 1)], ["Pattern", klass(d.v)]]]);
     placeLabels(pts, W, H, m);
+    svg.append("g").selectAll("line").data(pts.filter((p) => p.lx != null && p.leader)).join("line")
+      .attr("x1", (d) => d.cx).attr("y1", (d) => d.cy).attr("x2", (d) => d.leader.x).attr("y2", (d) => d.leader.y)
+      .style("stroke", "var(--ink-3)").attr("stroke-width", 0.8).style("pointer-events", "none");
     svg.append("g").selectAll("text").data(pts.filter((p) => p.lx != null)).join("text")
       .attr("x", (d) => d.lx).attr("y", (d) => d.ly).attr("dy", "0.35em").attr("text-anchor", (d) => d.anchor)
       .style("fill", "var(--ink)").style("font-weight", (d) => (d.role === state.role ? 700 : 400)).style("pointer-events", "none")
@@ -257,14 +261,14 @@
     const b = benchValue(), r = DATA.ladder.roles.find((d) => d.role === state.role), mix = r.mix[state.bench];
     document.getElementById("role-title").textContent = `Where ${shortRole(r.role).toLowerCase()}s go next`;
     document.getElementById("role-facts").innerHTML = [
-      [money(r.sf_p50), "SF median wage"], [num(r.sf_emp), "SF jobs"],
-      [pct(r.annual_transfer_rate, 1), "leave the occupation each year"], [pct(r.share_stay_health), "of leavers stay in healthcare"],
+      [money(r.sf_p50), r.combined ? "SF median wage (two occupations, weighted)" : "SF median wage"], [num(r.sf_emp), "SF jobs"],
+      [pct(r.annual_transfer_rate, 1), "projected transfers out per year"], [pct(r.share_stay_health), "of leavers move within healthcare"],
     ].map(([v, k]) => `<div><b>${v}</b><span>${k}</span></div>`).join("");
 
     const segs = [
-      ["Clinical job, at or above " + money(b), mix.clinical_above, "var(--s1)"],
-      ["Other job at or above (incl. management)", mix.other_above, "var(--s2)"],
-      ["Any job below", mix.below, "var(--s3)"],
+      ["Clinical occupation, median ≥ " + money(b), mix.clinical_above, "var(--s1)"],
+      ["Other occupation, median ≥ (incl. health admin)", mix.other_above, "var(--s2)"],
+      ["Occupation with median below", mix.below, "var(--s3)"],
       ["No SF wage published", mix.no_sf_wage, "var(--axis)"],
     ];
     const W = width("mix-chart"), H = 64, bar = 30;
@@ -311,7 +315,7 @@
     const hit = dg.append("rect").attr("class", "hit").attr("x", 0).attr("width", DW)
       .attr("y", (d, i) => dy(i) - 2).attr("height", dy.step());
     bindTip(hit, (d) => [d.name, [["Share of leavers", pct(d.share, 1)], ["SF median", money(d.sf_p50)],
-      ["Clinical healthcare", d.clinical ? "Yes" : "No"]]]);
+      ["Clinical occupation", d.clinical ? "Yes" : "No"]]]);
   }
 
   /* ---------------------------------------------------------------- who */

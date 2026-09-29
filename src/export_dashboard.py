@@ -42,7 +42,7 @@ def ladder_block() -> dict:
             continue
         g = d[d.soc1 == soc10]
         row = s[s.soc2010 == soc10].iloc[0]
-        clinical = g.dest_health & (g.soc18 != "11-9111")
+        clinical = g.dest_clinical
         mix = {}
         for name, lw in c.benchmarks().items():
             priced = g.dest_p50.notna()
@@ -53,10 +53,10 @@ def ladder_block() -> dict:
                 "below": g.loc[priced & (g.dest_p50 < lw), "share"].sum(),
                 "no_sf_wage": g.loc[~priced, "share"].sum(),
             }
-        top = (g.groupby(["soc2_name", "dest_p50", "dest_health"], dropna=False)
-                 .agg(share=("share", "sum"), soc18=("soc18", "first")).reset_index()
+        top = (g.groupby(["soc18", "dest_title", "dest_p50", "dest_clinical"], dropna=False)
+                 .agg(share=("share", "sum")).reset_index()
                  .sort_values("share", ascending=False).head(12))
-        top["clinical"] = top.dest_health & (top.soc18 != "11-9111")
+        top["dest_title"] = top.dest_title.fillna("(no SF wage published)")
         roles.append({
             "soc2010": soc10, "role": role,
             "sf_emp": row.sf_emp, "sf_p25": row.sf_p25, "sf_p50": row.sf_p50,
@@ -64,8 +64,10 @@ def ladder_block() -> dict:
             "switch_obs": row.switch_obs,
             "share_stay_health": row.share_stay_health,
             "mix": {k: {kk: _clean(vv) for kk, vv in v.items()} for k, v in mix.items()},
-            "top_destinations": records(top[["soc2_name", "share", "dest_p50", "clinical"]]
-                                        .rename(columns={"soc2_name": "name", "dest_p50": "sf_p50"})),
+            "combined": bool(row.combined),
+            "top_destinations": records(top[["soc18", "dest_title", "share", "dest_p50", "dest_clinical"]]
+                                        .rename(columns={"dest_title": "name", "dest_p50": "sf_p50",
+                                                         "dest_clinical": "clinical"})),
         })
     return {"roles": [{k: _clean(v) for k, v in r.items()} for r in roles]}
 
@@ -80,7 +82,8 @@ def main() -> None:
         "meta": {
             "built": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
             "benchmarks": c.benchmarks(),
-            "cpi_factor_2024_to_2026": c.cpi_factor_2024_to_feb2026(),
+            "cpi_factor_2024_to_mit_basis": c.cpi_factor_2024_to_mit_basis(),
+            "mit_price_basis": c.MIT_PRICE_BASIS,
             "sources": [{k: r[k] for k in ("file", "url", "description", "retrieved")}
                         for r in manifest],
         },

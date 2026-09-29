@@ -6,6 +6,7 @@ analytical choices and are labelled as such.
 """
 from __future__ import annotations
 
+import json
 import re
 import zipfile
 from functools import lru_cache
@@ -130,8 +131,8 @@ def soc2010_to_2018() -> pd.DataFrame:
     """6-digit SOC 2010 -> 6-digit SOC 2018, built from O*NET's published
     taxonomy crosswalks (2010 O*NET-SOC -> 2019 O*NET-SOC -> 2018 SOC).
 
-    A 2010 code can map to several 2018 codes; `weight` splits it evenly so a
-    transition share is never double-counted.
+    A 2010 code can map to several 2018 codes; `weight` (summing to 1 per 2010
+    code) splits it so a transition share is never double-counted.
     """
     a = pd.read_csv(RAW / "onet_2010_to_2019_crosswalk.csv", dtype=str)
     b = pd.read_csv(RAW / "onet_2019_to_soc2018_crosswalk.csv", dtype=str)
@@ -145,9 +146,25 @@ def soc2010_to_2018() -> pd.DataFrame:
     # of the whole occupation.
     base = m[m.onet10.str.endswith(".00")]
     m = pd.concat([base, m[~m.soc10.isin(base.soc10)]])
-    m = m[["soc10", "soc18"]].drop_duplicates()
-    m["weight"] = 1 / m.groupby("soc10").soc18.transform("nunique")
-    return m.reset_index(drop=True)
+    m = m[["soc10", "soc18"]].drop_duplicates().reset_index(drop=True)
+    # Where one 2010 code became several 2018 codes, the crosswalk does not say how
+    # its workers divided. Allocate by each successor's SF employment (OEWS), and
+    # evenly where no successor has published employment. An assumption, shown in
+    # the report's appendix.
+    o = oews().set_index("soc").emp
+    avail = set(o.index)
+    m["emp"] = m.soc18.map(lambda s: o.get(to_oews_code(s, avail) or "", np.nan))
+    n = m.groupby("soc10").soc18.transform("nunique")
+    tot = m.groupby("soc10").emp.transform("sum")
+    m["weight"] = np.where(n == 1, 1.0, np.where(tot > 0, m.emp.fillna(0) / tot, 1 / n))
+    # Successors sharing one broad OEWS code would double-count its employment.
+    m["oews_code"] = m.soc18.map(lambda s: to_oews_code(s, avail))
+    dup = m.duplicated(["soc10", "oews_code"], keep=False) & m.oews_code.notna() & (n > 1)
+    if dup.any():
+        k = m[dup].groupby(["soc10", "oews_code"]).soc18.transform("nunique")
+        m.loc[dup, "weight"] = m.loc[dup, "weight"] / k
+        m["weight"] = m.weight / m.groupby("soc10").weight.transform("sum")
+    return m[["soc10", "soc18", "weight"]]
 
 
 def to_oews_code(soc18: str, available: set[str]) -> str | None:
@@ -204,10 +221,16 @@ def cpi_sf() -> pd.Series:
     return s.dropna()
 
 
-def cpi_factor_2024_to_feb2026() -> float:
-    """Price level in Feb 2026 (the MIT update) relative to the 2024 average."""
+# MIT's 2026 estimates are "adjusted for inflation to December 2025 dollars"
+# (livingwage.mit.edu/pages/methodology). SF CPI is published for that month.
+MIT_PRICE_BASIS = "2025-12"
+
+
+def cpi_factor_2024_to_mit_basis() -> float:
+    """SF price level at MIT's price basis (Dec 2025) relative to the 2024 average,
+    the dollar year of the ACS wages."""
     s = cpi_sf()
-    return float(s["2026-02"].iloc[0] / s["2024"].mean())
+    return float(s[MIT_PRICE_BASIS].iloc[0] / s["2024"].mean())
 
 
 # ---------------------------------------------------------------- ACS PUMS
@@ -220,12 +243,18 @@ PUMS_COLS = ["PUMA", "ADJINC", "PWGTP", "AGEP", "SCHL", "SEX", "WAGP", "WKHP",
 def pums_sf() -> pd.DataFrame:
     """San Francisco County person records, ACS PUMS 2020-2024 5-year.
 
-    Cached to data/interim after the first read of the 270 MB state file.
+    Cached to data/interim after the first read of the 270 MB state file, and
+    rebuilt whenever that file's size or modification time changes.
     """
     cache = INTERIM / "pums_sf_2020_2024.parquet"
-    if cache.exists():
+    stamp = INTERIM / "pums_sf_2020_2024.source.json"
+    src = RAW / "acs_pums_ca_person_2020_2024.zip"
+    if cache.exists() and not src.exists():
+        return pd.read_parquet(cache)  # offline copy: only the extract is shipped
+    sig = {"bytes": src.stat().st_size, "mtime": int(src.stat().st_mtime)}
+    if cache.exists() and stamp.exists() and json.loads(stamp.read_text()) == sig:
         return pd.read_parquet(cache)
-    z = zipfile.ZipFile(RAW / "acs_pums_ca_person_2020_2024.zip")
+    z = zipfile.ZipFile(src)
     name = next(n for n in z.namelist() if n.endswith(".csv"))
     parts = []
     with z.open(name) as f:
@@ -235,4 +264,5 @@ def pums_sf() -> pd.DataFrame:
             parts.append(ch[ch.PUMA.isin(SF_PUMAS)])
     df = pd.concat(parts, ignore_index=True)
     df.to_parquet(cache)
+    stamp.write_text(json.dumps(sig))
     return df

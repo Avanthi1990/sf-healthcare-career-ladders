@@ -11,11 +11,11 @@ degree.
 | Field | Meaning |
 |---|---|
 | soc, title | 2018 SOC code and title |
-| entry_ed | Typical entry education (BLS, via EDD projections) |
+| entry_ed | Typical entry education (BLS, via EDD projections). The screen keeps everything below a bachelor's degree, including associate's degrees |
 | emp_2023 | Base-year employment, EDD projections |
 | openings | Total openings 2023-2033 (growth + exits + transfers) |
 | growth_2023_33 | Projected employment change, 2023-2033 (share) |
-| annual_transfer_rate | EDD projected transfers ÷ 10 ÷ 2023 employment: the yearly share leaving for another occupation |
+| annual_transfer_rate | EDD projected occupational transfers 2023-2033 ÷ 10 ÷ 2023 employment. A constructed projection ratio, not an observed annual rate |
 | p25, p50, p75 | EDD OEWS wage percentiles, May 2025 estimates aged to 2026 Q1 |
 | p50_vs_single_lw | Median minus the MIT single-adult living wage ($32.44) |
 | median_supports, entry_wage_supports | Highest MIT household tier the median (or 25th percentile) reaches |
@@ -27,19 +27,21 @@ One row per entry role (SOC 2010, as used by the transitions data).
 
 | Field | Meaning |
 |---|---|
-| oews_code | 2018 SOC code used for the SF wage (a broad code where OEWS publishes only that) |
+| oews_code | 2018 SOC code(s) used for the SF wage (a broad code where OEWS publishes only that). Two codes joined by + where the 2010 role became two occupations |
+| combined | True where two 2018 occupations are combined; sf_p25 and sf_p50 are then employment-weighted means of their percentiles, an approximation of the combined median |
 | sf_emp, sf_p25, sf_p50 | SF employment and wages for the role |
-| sf_annual_transfer_rate | As above |
+| sf_annual_transfer_rate | As annual_transfer_rate above |
 | switch_obs | Age-reweighted national observations of people leaving the role |
 | share_priced | Share of transitions whose destination has an SF wage |
 | share_stay_health | Share of leavers moving to another healthcare occupation, including management |
 | share_to_lw_any | Share moving to any occupation whose SF median ≥ $32.44 |
 | share_to_lw_health | As above, healthcare destinations including management |
-| share_to_lw_clinical | As above, excluding medical and health services managers. **The headline ladder measure** |
+| share_to_lw_clinical | As above, clinical occupations only: excludes the occupations in `ladder.NON_CLINICAL` (managers, medical secretaries, medical records, health information, transcription, community health work). **The headline ladder measure** |
+| share_to_lw_nonclinical_health | As above, non-clinical healthcare occupations only |
 | share_to_manager | Share moving to medical and health services manager |
 | pattern | Rung (clinical ≥ 30%), Partial rung (15-30%), Plateau (< 15%). Analytical cuts |
 
-All shares are conditional on leaving the occupation, and are national (2002-2015).
+All shares are conditional on leaving the occupation, and are national (2002-2015). "At or above the living wage" refers to the destination occupation's SF median, not the earnings of the people who moved. Where a 2010 destination code became several 2018 codes, its share is split by the successors' SF employment.
 
 ## ladder_destinations.csv
 
@@ -59,7 +61,7 @@ whether the destination counts as healthcare.
 
 **Universe:** SF residents aged 18-64, employed, 35+ hours a week, 50+ weeks a year,
 with wage income. Hourly wage = annual wages (2024 dollars) ÷ (usual weekly hours ×
-weeks worked). The threshold is $32.44 deflated to 2024 dollars with SF CPI ($31.17).
+weeks worked). The threshold is $32.44 (MIT, December 2025 dollars) converted to 2024 dollars with SF CPI ($31.58).
 
 **Race/ethnicity:** Latino of any race; then non-Latino White, Black, Asian, and
 Other/multiracial.

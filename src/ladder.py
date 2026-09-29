@@ -41,6 +41,47 @@ def dest_is_health(soc18: str) -> bool:
     return is_health(soc18) or soc18 == "11-9111"
 
 
+# Healthcare occupations that are not clinical (patient care or clinical technical
+# work): management, administration, records and health education. The "clinical
+# rung" measure excludes them; "stay in healthcare" includes them.
+NON_CLINICAL = {
+    "11-9111": "Medical and health services managers",
+    "43-6013": "Medical secretaries and administrative assistants",
+    "29-2072": "Medical records specialists",
+    "29-9021": "Health information technologists and medical registrars",
+    "31-9094": "Medical transcriptionists",
+    "21-1094": "Community health workers",
+}
+
+
+def is_clinical(soc18) -> bool:
+    return isinstance(soc18, str) and dest_is_health(soc18) and soc18 not in NON_CLINICAL
+
+
+def origin_stats(soc10: str) -> dict:
+    """SF wage, employment and projected transfers for an entry role.
+
+    Where the 2010 role became several 2018 occupations (EMT / paramedic; medical
+    records), the successors are combined: employment and transfers are summed,
+    and wages are the employment-weighted mean of the successors' percentiles. A
+    weighted mean of medians is not the median of the combined group; it is
+    labelled as an approximation wherever it is shown.
+    """
+    o, p = c.oews().set_index("soc"), c.projections().set_index("soc")
+    x = c.soc2010_to_2018()
+    codes = sorted({c.to_oews_code(s, set(o.index)) for s in x.loc[x.soc10 == soc10, "soc18"]} - {None})
+    emp = o.emp.reindex(codes)
+    w = emp / emp.sum()
+    return dict(
+        oews_code="+".join(codes), combined=len(codes) > 1,
+        sf_emp=emp.sum(),
+        sf_p25=float((o.p25.reindex(codes) * w).sum()),
+        sf_p50=float((o.p50.reindex(codes) * w).sum()),
+        sf_annual_transfer_rate=float(p.transfers.reindex(codes).sum() / 10
+                                      / p.emp_2023.reindex(codes).sum()),
+    )
+
+
 def priced_destinations() -> pd.DataFrame:
     t, x, o = c.transitions(), c.soc2010_to_2018(), c.oews()
     avail = set(o.soc)
@@ -57,42 +98,36 @@ def priced_destinations() -> pd.DataFrame:
     d["dest_p50"] = d.oews_code.map(lambda s: wage.p50.get(s, np.nan) if s else np.nan)
     d["dest_title"] = d.oews_code.map(lambda s: wage.title.get(s) if s else None)
     d["dest_health"] = d.soc18.map(lambda s: dest_is_health(s) if isinstance(s, str) else False)
+    d["dest_clinical"] = d.soc18.map(is_clinical)
     return d
 
 
 def summarise(d: pd.DataFrame) -> pd.DataFrame:
-    o = c.oews().set_index("soc")
-    p = c.projections().set_index("soc")
     lw = c.lw_single()
-    x = c.soc2010_to_2018()
     rows = []
     for soc10, role in ENTRY.items():
         g = d[d.soc1 == soc10]
-        soc18 = x.loc[x.soc10 == soc10, "soc18"].iloc[0]
-        code = c.to_oews_code(soc18, set(o.index))
-        p50 = o.p50.get(code, np.nan)
+        st = origin_stats(soc10)
         priced = g[g.dest_p50.notna()]
+        above = priced.dest_p50 >= lw
         rows.append(dict(
-            soc2010=soc10, role=role, oews_code=code,
-            sf_emp=o.emp.get(code, np.nan), sf_p25=o.p25.get(code, np.nan), sf_p50=p50,
-            clears_lw=p50 >= lw,
-            sf_annual_transfer_rate=(p.transfers.get(code, np.nan) / 10
-                                     / p.emp_2023.get(code, np.nan)),
+            soc2010=soc10, role=role, **st,
+            clears_lw=st["sf_p50"] >= lw,
             switch_obs=g.total_obs.iloc[0],
             share_priced=priced.share.sum(),
             share_stay_health=g.loc[g.dest_health, "share"].sum(),
-            share_to_lw_any=priced.loc[priced.dest_p50 >= lw, "share"].sum(),
-            share_to_lw_health=priced.loc[(priced.dest_p50 >= lw) & priced.dest_health, "share"].sum(),
-            share_to_lw_clinical=priced.loc[(priced.dest_p50 >= lw) & priced.dest_health
-                                            & (priced.soc18 != "11-9111"), "share"].sum(),
+            share_to_lw_any=priced.loc[above, "share"].sum(),
+            share_to_lw_health=priced.loc[above & priced.dest_health, "share"].sum(),
+            share_to_lw_clinical=priced.loc[above & priced.dest_clinical, "share"].sum(),
+            share_to_lw_nonclinical_health=priced.loc[above & priced.dest_health
+                                                      & ~priced.dest_clinical, "share"].sum(),
             share_to_manager=g.loc[g.soc18 == "11-9111", "share"].sum(),
-            share_to_higher_pay=priced.loc[priced.dest_p50 >= p50 * 1.15, "share"].sum(),
+            share_to_higher_pay=priced.loc[priced.dest_p50 >= st["sf_p50"] * 1.15, "share"].sum(),
             top_destination=g.sort_values("share").iloc[-1].soc2_name,
             top_share=g.share.max(),
         ))
     s = pd.DataFrame(rows)
-    # Rung: most switchers who go anywhere above the living wage stay in healthcare
-    # to do it. The threshold is an analytical cut, shown in the report, not a law.
+    # Cut-offs on the clinical measure are analytical choices, shown in the report.
     s["pattern"] = np.select(
         [s.share_to_lw_clinical >= 0.30, s.share_to_lw_clinical >= 0.15],
         ["Rung", "Partial rung"], "Plateau")
@@ -108,12 +143,12 @@ def main() -> None:
              .groupby("soc1").head(8))
     top = top.assign(role=top.soc1.map(ENTRY))[
         ["soc1", "role", "soc2", "soc2_name", "soc18", "dest_title", "share",
-         "dest_p50", "dest_health"]]
+         "dest_p50", "dest_health", "dest_clinical"]]
     top.to_csv(c.OUT / "ladder_destinations.csv", index=False)
 
     with pd.option_context("display.width", 240):
         print(s[["role", "sf_emp", "sf_p50", "sf_annual_transfer_rate", "share_priced",
-                 "share_stay_health", "share_to_lw_any", "share_to_lw_health", "share_to_lw_clinical", "share_to_manager",
+                 "share_stay_health", "share_to_lw_any", "share_to_lw_health", "share_to_lw_clinical", "share_to_lw_nonclinical_health",
                  "top_destination", "top_share", "pattern"]]
               .to_string(index=False, float_format=lambda v: f"{v:,.3f}"))
         for soc in ["31-9092", "31-9091", "43-6013", "29-2061"]:

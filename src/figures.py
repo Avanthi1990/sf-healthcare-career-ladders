@@ -114,7 +114,7 @@ def fig_screen() -> None:
     ax.set_xlabel("Hourly wage, SF-San Mateo (dot = median, bar = 25th-75th percentile)")
     _recede(ax)
     ax.legend(handles=[
-        mpl.lines.Line2D([], [], marker="o", ls="", color=BLUE, label="Median clears living wage"),
+        mpl.lines.Line2D([], [], marker="o", ls="", color=BLUE, label="Median at or above living wage"),
         mpl.lines.Line2D([], [], marker="o", ls="", color=ORANGE, label="Median below living wage")],
         loc="lower right", bbox_to_anchor=(1, 0.16), frameon=False, fontsize=8)
     fig.savefig(c.FIG / "fig2_screen.png")
@@ -130,29 +130,31 @@ def fig_ladder() -> None:
     col = np.where(s.pattern == "Rung", BLUE, np.where(s.pattern == "Partial rung", AQUA, ORANGE))
     ax.scatter(s.sf_p50, s.share_to_lw_clinical * 100, s=size ** 1.25 / 2, c=col,
                alpha=0.9, edgecolor=SURFACE, linewidth=2, zorder=3)
-    offsets = {"Licensed vocational nurse (LVN)": (-10, 6, "right"),
-               "Home health aide": (0, -24, "center"),
-               "Medical assistant": (-10, -7, "right"),
-               "Nursing assistant": (-9, 5, "right"),
-               "Dental assistant": (8, 6, "left"),
-               "Phlebotomist": (-6, 6, "right"),
-               "Medical secretary / admin": (0, -16, "center"),
-               "Pharmacy technician": (-4, -13, "center"),
-               "EMT / paramedic": (-7, 7, "right"),
-               "Medical records technician": (6, -9, "left"),
-               "Sterile processing technician": (0, 12, "center")}
+    offsets = {"Licensed vocational nurse (LVN)": (-12, 6, "right"),
+               "Home health aide": (0, -30, "center"),
+               "Medical assistant": (-30, 6, "right"),
+               "Nursing assistant": (-12, 2, "right"),
+               "Dental assistant": (14, 22, "left"),
+               "Phlebotomist": (-9, 5, "right"),
+               "Medical secretary / admin": (14, -22, "left"),
+               "Pharmacy technician": (-22, -24, "right"),
+               "EMT / paramedic": (40, 44, "left"),
+               "Medical records technician": (6, -12, "left"),
+               "Sterile processing technician": (0, 14, "center")}
     for _, r in s.iterrows():
         dx, dy, ha = offsets.get(r.role, (6, 0, "left"))
+        far = abs(dx) + abs(dy) > 24 and r.role != "Home health aide"
         ax.annotate(r.role.replace(" (LVN)", "").replace("Licensed vocational nurse", "LVN"),
                     (r.sf_p50, r.share_to_lw_clinical * 100), xytext=(dx, dy),
-                    textcoords="offset points", ha=ha, va="center", fontsize=7.8, color=INK)
+                    textcoords="offset points", ha=ha, va="center", fontsize=7.8, color=INK,
+                    arrowprops=dict(arrowstyle="-", color=INK_3, lw=0.6, shrinkB=5) if far else None)
     _lw_line(ax, lw, f"Single-adult living wage ${lw:.2f}")
     ax.set_xlim(14, 52)
     ax.set_ylim(0, 42)
     ax.xaxis.set_major_formatter(mpl.ticker.StrMethodFormatter("${x:,.0f}"))
     ax.yaxis.set_major_formatter(mpl.ticker.PercentFormatter(decimals=0))
     ax.set_xlabel("San Francisco median hourly wage of the role")
-    ax.set_ylabel("Of those who change occupation,\nshare moving to a clinical job\npaying above the living wage")
+    ax.set_ylabel("Of those who change occupation,\nshare moving to a clinical occupation\nwith an SF median at or above\nthe living wage")
     _recede(ax, xgrid=False)
     ax.legend(handles=[
         mpl.lines.Line2D([], [], marker="o", ls="", color=BLUE, label="Rung (30%+)"),
@@ -168,16 +170,15 @@ def fig_destinations() -> None:
     d = priced_destinations()
     lw = c.lw_single()
     roles = ["31-9092", "31-9091", "31-1014", "31-1011", "29-2061"]
-    clinical = lambda p: p.dest_health & (p.soc18 != "11-9111")
+    clinical = lambda p: p.dest_clinical
     rows = []
     for soc in roles:
         g = d[d.soc1 == soc]
         p = g[g.dest_p50.notna()]
         rows.append(dict(
             role=ENTRY[soc].replace("Licensed vocational nurse (LVN)", "LVN (second rung)"),
-            # Clinical = healthcare excluding management, as in the ladder chart;
-            # management moves (often a title on a resume, and usually needing a
-            # degree) are counted with "other" so the two figures agree.
+            # Clinical as defined by ladder.NON_CLINICAL, as in the ladder chart, so
+            # the two figures agree.
             health_above=p.loc[clinical(p) & (p.dest_p50 >= lw), "share"].sum(),
             other_above=p.loc[~clinical(p) & (p.dest_p50 >= lw), "share"].sum(),
             below=p.loc[p.dest_p50 < lw, "share"].sum()))
@@ -186,9 +187,9 @@ def fig_destinations() -> None:
     fig, ax = plt.subplots(figsize=(6.4, 2.6))
     y = np.arange(len(r))[::-1]
     left = np.zeros(len(r))
-    for col, color, name in [("health_above", BLUE, "Clinical healthcare job, above living wage"),
-                             ("other_above", ORANGE, "Other job above living wage (incl. management)"),
-                             ("below", AQUA, "Any job below living wage")]:
+    for col, color, name in [("health_above", BLUE, "Clinical occupation, median at or above living wage"),
+                             ("other_above", ORANGE, "Other occupation at or above (incl. health admin and management)"),
+                             ("below", AQUA, "Occupation with median below living wage")]:
         v = r[col].values * 100
         ax.barh(y, v - 0.4, left=left + 0.2, height=0.6, color=color, label=name, zorder=2)
         for yi, l, vi in zip(y, left, v):

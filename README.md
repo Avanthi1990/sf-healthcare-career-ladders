@@ -12,15 +12,17 @@ file listed, with its checksum, in `data/raw/MANIFEST.csv`.
 
 ## What it shows
 
-- **The need.** 59% of San Francisco full-time workers without a bachelor's degree
+- **The need.** 60% of San Francisco full-time workers without a bachelor's degree
   earn below the MIT single-adult living wage ($32.44/hr). By group: Latino 69%, Asian
-  61%, Black 60%, White 41%.
-- **Which jobs clear the bar.** The most common first healthcare jobs sit just under
+  62%, Black 60%, White 41%.
+- **Which jobs clear the bar.** Among healthcare occupations below the bachelor's level,
+  the most common first jobs sit just under
   that line: medical assistant $29.24, nursing assistant $28.75, dental assistant
   $31.86.
-- **The ladder.** Nationally, 15-18% of medical, dental and nursing assistants who
-  change occupation move into a clinical job paying above the SF living wage. For
-  licensed vocational nurses it is 36%, and 30% become registered nurses.
+- **The ladder.** Nationally, 10-15% of medical, dental and nursing assistants who
+  change occupation move into a clinical occupation whose SF median is at or above the
+  living wage. For licensed vocational nurses it is 34%, and 30% become registered
+  nurses.
 - **Who holds the jobs.** By race, entry-level healthcare work is done
   disproportionately by Asian and Black workers. The LVN and RN rung looks much more
   like the city's workforce as a whole.
@@ -93,11 +95,17 @@ docs/
 **The occupation crosswalk is built, not hand-typed.** The transitions data uses
 2010 occupation codes; SF wages use 2018 codes. `common.soc2010_to_2018()` chains
 O*NET's two published crosswalks. Where a 2010 code was split, it maps through the
-base occupation. An even split would put half of all customer-service moves into
-healthcare, through a small "patient representatives" specialty.
+base occupation, so a small specialty such as "patient representatives" cannot take
+half of all customer-service moves.
 
 **National and local data are never merged into one number.** Transition shares are
-national (2002-2015); wages are SF (2026). Every view shows them side by side.
+national (2002-2015); wages are SF (2026) occupation medians, not movers' own earnings.
+Every view shows them side by side.
+
+**Split occupations are allocated by SF employment.** Where one 2010 code became
+several 2018 codes, moves are divided by each successor's SF employment, an assumption
+documented in `common.soc2010_to_2018()`. "Clinical" excludes the administrative and
+non-clinical healthcare occupations listed in `ladder.NON_CLINICAL`.
 
 **Survey estimates carry their uncertainty.** `need.py` computes standard errors from
 the 80 ACS replicate weights. It flags any estimate with fewer than 50 records or a

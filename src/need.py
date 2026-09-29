@@ -2,7 +2,7 @@
 living wage, and who holds the entry healthcare jobs.
 
 ACS PUMS 2020-2024 5-year, San Francisco County residents (PUMAs 07507-07514).
-Wages are converted to 2024 dollars with ADJINC; the MIT threshold (Feb 2026) is
+Wages are converted to 2024 dollars with ADJINC; the MIT threshold (December 2025 dollars) is
 deflated to 2024 dollars with San Francisco CPI so both sides are in the same
 year's money. Standard errors use the 80 successive-difference replicate weights,
 as the Census Bureau specifies; estimates with a CV above 30% or fewer than 50
@@ -109,9 +109,9 @@ def composition(p: pd.DataFrame) -> pd.DataFrame:
 
 def main() -> None:
     p = c.pums_sf()
-    f = c.cpi_factor_2024_to_feb2026()
+    f = c.cpi_factor_2024_to_mit_basis()
     lw_2024 = c.lw_single() / f
-    print(f"SF persons: {len(p):,}; MIT single-adult LW ${c.lw_single()} (Feb 2026) "
+    print(f"SF persons: {len(p):,}; MIT single-adult LW ${c.lw_single()} (Dec 2025 dollars) "
           f"= ${lw_2024:.2f} in 2024 dollars (SF CPI factor {f:.4f})")
 
     ft = full_time_workers(p)
