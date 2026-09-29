@@ -182,7 +182,9 @@ def transitions() -> pd.DataFrame:
     if not f.exists() and not archive.exists() and subset.exists():
         # Emailed copy: the 22 MB archive is replaced by the rows this analysis
         # uses (see MANIFEST.csv for the full file's URL and checksum).
-        return pd.read_csv(subset, dtype={"soc1": str, "soc2": str})
+        # float32, as stored in the original .dta, so results match it exactly.
+        return pd.read_csv(subset, dtype={"soc1": str, "soc2": str, "total_obs": "float32",
+                                          "transition_share": "float32"})
     if not f.exists():
         import shutil
         import subprocess
