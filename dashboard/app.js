@@ -129,7 +129,7 @@
     ].map(([v, k]) => `<div class="tile"><div class="v">${v}</div><div class="k">${k}</div></div>`).join("");
 
     const small = document.getElementById("jobs-small").checked;
-    const rows = all.filter((r) => small || r.emp_2023 >= 400).sort((a, c) => c.p50 - a.p50);
+    const rows = all.filter((r) => small || r.emp_2023 >= 400).sort((a, c) => c.p50 - a.p50 || a.soc.localeCompare(c.soc));
     const W = width("jobs-chart"), narrow = W < 560;
     const m = { t: 22, r: 18, b: 32, l: narrow ? Math.min(150, W * 0.42) : 290 };
     const rowH = 22, H = m.t + m.b + rows.length * rowH;
@@ -183,7 +183,7 @@
     const crosses = (seg, box) => { for (let t = 0.05; t < 1; t += 0.05) {
       if (inside(seg.x1 + (seg.x2 - seg.x1) * t, seg.y1 + (seg.y2 - seg.y1) * t, box)) return true; } return false; };
     const dirs = [[1, 0], [-1, 0], [0, -1], [0, 1], [1, -1], [-1, -1], [1, 1], [-1, 1]];
-    pts.slice().sort((a, b) => b.r - a.r).forEach((p) => {
+    pts.slice().sort((a, b) => b.r - a.r || a.role.localeCompare(b.role)).forEach((p) => {
       const w = p.text.length * 6.4, h = 14;
       for (const d of [0, 16, 32, 48, 64]) {
         for (const [dx, dy] of dirs) {
@@ -234,7 +234,7 @@
     svg.append("line").attr("class", "ref").attr("x1", x(b)).attr("x2", x(b)).attr("y1", m.t).attr("y2", H - m.b);
     svg.append("text").attr("class", "ref-label").attr("x", x(b) + 4).attr("y", m.t + 2).text(money(b));
     pts.forEach((p) => { p.cx = x(p.sf_p50); p.cy = y(p.v); p.r = Math.max(5, r(p.sf_emp)); p.text = shortRole(p.role); });
-    const sorted = pts.slice().sort((a, c) => c.r - a.r);
+    const sorted = pts.slice().sort((a, c) => c.r - a.r || a.role.localeCompare(c.role));
     const g = svg.append("g").selectAll("g").data(sorted).join("g").style("cursor", "pointer")
       .on("click", (e, d) => { state.role = d.role; document.getElementById("role").value = d.role; renderLadder(); });
     g.append("circle").attr("cx", (d) => d.cx).attr("cy", (d) => d.cy).attr("r", (d) => d.r)

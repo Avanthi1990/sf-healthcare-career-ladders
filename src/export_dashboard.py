@@ -55,7 +55,7 @@ def ladder_block() -> dict:
             }
         top = (g.groupby(["soc18", "dest_title", "dest_p50", "dest_clinical"], dropna=False)
                  .agg(share=("share", "sum")).reset_index()
-                 .sort_values("share", ascending=False).head(12))
+                 .sort_values(["share", "soc18"], ascending=[False, True], kind="stable").head(12))
         top["dest_title"] = top.dest_title.fillna("(no SF wage published)")
         roles.append({
             "soc2010": soc10, "role": role,

@@ -123,7 +123,7 @@ def summarise(d: pd.DataFrame) -> pd.DataFrame:
                                                       & ~priced.dest_clinical, "share"].sum(),
             share_to_manager=g.loc[g.soc18 == "11-9111", "share"].sum(),
             share_to_higher_pay=priced.loc[priced.dest_p50 >= st["sf_p50"] * 1.15, "share"].sum(),
-            top_destination=g.sort_values("share").iloc[-1].soc2_name,
+            top_destination=g.sort_values(["share", "soc2"], ascending=[False, True], kind="stable").iloc[0].soc2_name,
             top_share=g.share.max(),
         ))
     s = pd.DataFrame(rows)
@@ -139,7 +139,7 @@ def main() -> None:
     s = summarise(d)
     s.to_csv(c.OUT / "ladder_summary.csv", index=False)
 
-    top = (d.sort_values(["soc1", "share"], ascending=[True, False])
+    top = (d.sort_values(["soc1", "share", "soc2", "soc18"], ascending=[True, False, True, True], kind="stable")
              .groupby("soc1").head(8))
     top = top.assign(role=top.soc1.map(ENTRY))[
         ["soc1", "role", "soc2", "soc2_name", "soc18", "dest_title", "share",

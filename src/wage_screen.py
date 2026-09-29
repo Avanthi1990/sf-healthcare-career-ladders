@@ -53,7 +53,7 @@ def build() -> pd.DataFrame:
     cols = ["soc", "title", "entry_ed", "emp_2023", "openings", "growth_2023_33",
             "annual_transfer_rate", "p25", "p50", "p75", "p50_vs_single_lw",
             "median_supports", "entry_wage_supports", "flagged"]
-    return df[cols].sort_values("p50", ascending=False).reset_index(drop=True)
+    return df[cols].sort_values(["p50", "soc"], ascending=[False, True], kind="stable").reset_index(drop=True)
 
 
 def main() -> None:

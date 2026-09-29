@@ -91,7 +91,7 @@ def fig_need() -> None:
 
 def fig_screen() -> None:
     s = pd.read_csv(c.OUT / "wage_screen.csv")
-    s = s[s.emp_2023 >= 400].sort_values("p50")
+    s = s[s.emp_2023 >= 400].sort_values(["p50", "soc"], kind="stable")
     b = c.benchmarks()
     fig, ax = plt.subplots(figsize=(6.4, 4.6))
     y = np.arange(len(s))
