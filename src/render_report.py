@@ -149,7 +149,10 @@ def main() -> None:
     src = Path(sys.argv[1] if len(sys.argv) > 1 else "report/report.md").resolve()
     pdf = Path(sys.argv[2]) if len(sys.argv) > 2 else src.with_suffix(".pdf")
     tmp = src.with_suffix(".rendered.html")
-    tmp.write_text(to_html(src.read_text(), src.stem))
+    md = src.read_text()
+    # PDF title = the report's first heading, not the file name.
+    title = next((l[2:].strip() for l in md.splitlines() if l.startswith("# ")), src.stem)
+    tmp.write_text(to_html(md, title))
     subprocess.run(
         [CHROME, "--headless=new", "--disable-gpu", "--no-pdf-header-footer",
          "--virtual-time-budget=10000", f"--print-to-pdf={pdf}", f"file://{tmp}"],
