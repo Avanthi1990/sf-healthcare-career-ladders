@@ -20,9 +20,10 @@
 
   /* ---------------------------------------------------------------- tooltip */
   const tip = document.getElementById("tip");
-  function showTip(evt, title, rows) {
+  function showTip(evt, title, rows, note) {
     tip.innerHTML = `<b>${esc(title)}</b>` +
-      rows.map(([k, v]) => `<div class="row"><span>${esc(k)}</span><span>${esc(v)}</span></div>`).join("");
+      rows.map(([k, v]) => `<div class="row"><span>${esc(k)}</span><span>${esc(v)}</span></div>`).join("") +
+      (note ? `<div class="tipnote">${esc(note)}</div>` : "");
     tip.hidden = false;
     const pad = 14, w = tip.offsetWidth, h = tip.offsetHeight;
     let x = evt.clientX + pad, y = evt.clientY + pad;
@@ -33,7 +34,7 @@
   }
   const hideTip = () => { tip.hidden = true; };
   function bindTip(sel, fn) {
-    sel.on("pointerenter pointermove", (e, d) => { const [t, r] = fn(d); showTip(e, t, r); })
+    sel.on("pointerenter pointermove", (e, d) => { const [t, r, n] = fn(d); showTip(e, t, r, n); })
        .on("pointerleave", hideTip);
   }
 
@@ -170,7 +171,14 @@
   /* ---------------------------------------------------------------- ladder */
   const shortRole = (r) => r.replace("Licensed vocational nurse (LVN)", "LVN");
   const klass = (v) => (v >= 0.30 ? "Rung" : v >= 0.15 ? "Partial rung" : "Plateau");
-  const klassColor = { "Rung": "var(--s1)", "Partial rung": "var(--s3)", "Plateau": "var(--s2)" };
+  // Bubble colour = one blue, shaded by the share who move up (a sequential scale, not
+  // categories): pale to dark in light mode, dim to bright in dark mode.
+  function seqColor(vmax) {
+    const css = getComputedStyle(document.documentElement);
+    const stops = ["--seq-0", "--seq-1", "--seq-2"].map((v) => css.getPropertyValue(v).trim());
+    const f = d3.interpolateRgbBasis(stops);
+    return { at: (v) => f(Math.max(0, Math.min(1, v / vmax))), stops };
+  }
 
   function placeLabels(pts, W, H, m) {
     // Greedy placement: try positions around each bubble, moving further out step by
@@ -219,8 +227,9 @@
     const x = d3.scaleLinear([14, Math.max(52, b + 4)], [m.l, W - m.r]);
     const y = d3.scaleLinear([0, Math.max(0.42, d3.max(pts, (p) => p.v) + 0.05)], [H - m.b, m.t]);
     const r = d3.scaleSqrt([0, d3.max(pts, (p) => p.sf_emp)], [0, Math.min(34, W / 16)]);
-    document.getElementById("ladder-legend").innerHTML = ["Rung", "Partial rung", "Plateau"].map((k) =>
-      `<span><i style="background:${klassColor[k]}"></i>${k} (${k === "Rung" ? "30%+" : k === "Plateau" ? "under 15%" : "15-30%"})</span>`).join("") +
+    const vmax = d3.max(pts, (p) => p.v), shade = seqColor(vmax);
+    document.getElementById("ladder-legend").innerHTML =
+      `<span>Share who move up: 0%<i class="ramp" style="background:linear-gradient(90deg, ${shade.stops.join(", ")})"></i>${pct(vmax)}</span>` +
       "<span>Bubble size = SF jobs</span>";
     const svg = d3.select("#ladder-chart").html("").append("svg").attr("viewBox", `0 0 ${W} ${H}`)
       .attr("role", "img").attr("aria-label", "Entry roles by wage and upward mobility");
@@ -238,14 +247,17 @@
     const g = svg.append("g").selectAll("g").data(sorted).join("g").style("cursor", "pointer")
       .on("click", (e, d) => { state.role = d.role; document.getElementById("role").value = d.role; renderLadder(); });
     g.append("circle").attr("cx", (d) => d.cx).attr("cy", (d) => d.cy).attr("r", (d) => d.r)
-      .style("fill", (d) => klassColor[klass(d.v)]).style("fill-opacity", 0.9)
+      .style("fill", (d) => shade.at(d.v)).style("fill-opacity", 0.95)
       .style("stroke", (d) => (d.role === state.role ? "var(--ink)" : "var(--surface)"))
       .attr("stroke-width", (d) => (d.role === state.role ? 2.5 : 2));
     bindTip(g, (d) => [d.role, [
-      ["SF median", money(d.sf_p50)], ["SF jobs", num(d.sf_emp)],
-      ["Leavers to clinical occupation, median ≥ " + money(b), pct(d.v)],
-      ["Leavers moving within healthcare", pct(d.share_stay_health)],
-      ["Projected transfers out per year (SF)", pct(d.annual_transfer_rate, 1)], ["Pattern", klass(d.v)]]]);
+      ["SF median wage (early 2026)", money(d.sf_p50)], ["SF jobs (May 2025)", num(d.sf_emp)],
+      ["Moved up: clinical job paying " + money(b) + "+", pct(d.v)],
+      ["Stayed in healthcare: any role, any pay", pct(d.share_stay_health)],
+      ["Projected transfers out per year (2023 to 2033)", pct(d.annual_transfer_rate, 1)], ["Pattern", klass(d.v)]],
+      "Moved up counts only hands-on patient-care jobs whose SF median reaches the living wage. " +
+      "Stayed in healthcare counts any healthcare job, including office, admin and management roles, at any pay. " +
+      "Job moves: US resumes, 2002 to 2015."]);
     placeLabels(pts, W, H, m);
     svg.append("g").selectAll("line").data(pts.filter((p) => p.lx != null && p.leader)).join("line")
       .attr("x1", (d) => d.cx).attr("y1", (d) => d.cy).attr("x2", (d) => d.leader.x).attr("y2", (d) => d.leader.y)
@@ -262,7 +274,7 @@
     document.getElementById("role-title").textContent = `Where ${shortRole(r.role).toLowerCase()}s go next`;
     document.getElementById("role-facts").innerHTML = [
       [money(r.sf_p50), r.combined ? "SF median wage (two occupations, weighted)" : "SF median wage"], [num(r.sf_emp), "SF jobs"],
-      [pct(r.annual_transfer_rate, 1), "projected transfers out per year"], [pct(r.share_stay_health), "of leavers move within healthcare"],
+      [pct(r.annual_transfer_rate, 1), "projected transfers out per year"], [pct(r.share_stay_health), "of leavers stay in healthcare (any role, any pay)"],
     ].map(([v, k]) => `<div><b>${v}</b><span>${k}</span></div>`).join("");
 
     const segs = [
@@ -414,8 +426,9 @@
       const dark = document.documentElement.getAttribute("data-theme") === "dark" ||
         (!document.documentElement.hasAttribute("data-theme") && matchMedia("(prefers-color-scheme: dark)").matches);
       const next = dark ? "light" : "dark";
-      applyTheme(next); store.set("theme", next);
+      applyTheme(next); store.set("theme", next); renderTab();
     });
+    matchMedia("(prefers-color-scheme: dark)").addEventListener("change", renderTab);
     let t; window.addEventListener("resize", () => { clearTimeout(t); t = setTimeout(renderTab, 150); });
     document.addEventListener("scroll", hideTip, { passive: true });
 
