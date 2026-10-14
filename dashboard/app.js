@@ -55,7 +55,7 @@
     const lvn = DATA.ladder.roles.find((r) => r.role.startsWith("Licensed vocational"));
     const rn = lvn.top_destinations.find((d) => d.soc18 === "29-1141");
     const tiles = [
-      [pct(noBA.share), `of SF full-time workers without a bachelor's degree earn below ${money(b)}/hr`],
+      [pct(noBA.share), `of SF full-time workers without a bachelor's degree earn below ${money(b)}/hr (${money(noBA.benchmark_2024)} in 2024 dollars)`],
       [`${clears} of ${DATA.screen.length}`, `healthcare occupations below the bachelor's level have a median at or above ${money(b)}`],
       [pct(ma.mix[state.bench].clinical_above), "of medical assistants who change occupation move into a clinical occupation whose SF median is at least that"],
       [pct(rn ? rn.share : null), `of LVNs who change occupation become registered nurses (SF median ${money(rn ? rn.sf_p50 : null)})`],
@@ -80,7 +80,7 @@
       ...DATA.need.find((r) => r.benchmark === state.bench && r.population === p && r.group === g) }));
     const all = rows[1];
     document.getElementById("need-lede").textContent =
-      `Without a degree, ${pct(all.share)} of full-time workers (about ${num(Math.round(all.below_count / 100) * 100)} people) earn below the living wage for "${state.bench.toLowerCase()}". With a degree, ${pct(rows[0].share)}.`;
+      `Without a degree, ${pct(all.share)} of full-time workers (about ${num(Math.round(all.below_count / 100) * 100)} people) earn below the living wage for "${state.bench.toLowerCase()}" (${money(all.benchmark_2024)} in 2024 dollars, the same buying power as ${money(benchValue())} in December 2025). With a degree, ${pct(rows[0].share)}.`;
 
     const W = width("need-chart"), m = { t: 8, r: 56, b: 30, l: Math.min(190, W * 0.38) };
     const rowH = 30, H = m.t + m.b + rows.length * rowH;
